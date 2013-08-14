@@ -6,10 +6,46 @@ class Solitary {
 	var $TDiscard = array();
 	var $TAces = array();
 	var $TSolitary = array();
+	var $end = false;
 	
 	function __construct() {
 		$this->cardGame = new CardGame();
 		$this->cardGame->init();
+	}
+	
+	public function create_random_game() {
+		shuffle($this->cardGame->TCard);
+		$i = 0;
+		foreach($this->cardGame->TCard as $card) {
+			if(count($this->TDeck) < 24) { // Fill the deck with the 24 first cards
+				$this->TDeck[] = $card;
+			} else { // Fill the board with the others
+				if(empty($this->TSolitary[$i])) {
+					$this->TSolitary[$i] = array();
+				}
+				
+				$this->TSolitary[$i][] = $card;
+				
+				if(count($this->TSolitary[$i]) > $i) {
+					$i++;
+				}
+			}
+		}
+	}
+	
+	public function get_solution(&$chemin) {
+		if(count($chemin) == 5) $this->end = true;
+		while(!$this->end) {
+			$next = $this->get_next_move();
+			
+			$chemin[] = $next;
+			
+			$this->get_solution($chemin);
+		}
+	}
+	
+	private function get_next_move() {
+		
 	}
 }
 
@@ -26,12 +62,14 @@ class CardGame {
 		foreach($this->TCard as $card) {
 			echo $card;
 		}
+		return '';
 	}
 	
 	public function init() {
+		$nbCardPerSuit = $this->nbCards / count($this->TSuit);
 		for($i=0; $i < $this->nbCards; $i++) {
-			$suit = $this->TSuit[($i % 13)];
-			$this->TCard[] = new Card($suit, ($i % 13), ($i % 13)); 
+			$suit = $this->TSuit[floor($i / $nbCardPerSuit)];
+			$this->TCard[] = new Card($suit, ($i % $nbCardPerSuit), ($i % $nbCardPerSuit)); 
 		}
 	}
 }
@@ -55,20 +93,20 @@ class Card {
 	}
 	
 	public function __toString() {
-		return $this->get_label().'<br />';
+		return $this->get_label();
 	}
 	
 	private function set_label() {
-		if($this->code == 1) $this->label = 'Ace';
-		else if($this->code < 11) $this->label = $this->code;
-		else if($this->code == 11) $this->label = 'J';
-		else if($this->code == 12) $this->label = 'Q';
-		else if($this->code == 13) $this->label = 'K';
+		if($this->code === 0) $this->label = 'A';
+		else if($this->code < 10) $this->label = $this->code + 1;
+		else if($this->code == 10) $this->label = 'J';
+		else if($this->code == 11) $this->label = 'Q';
+		else if($this->code == 12) $this->label = 'K';
 		else $this->label = 'Unknown';
 	}
 	
 	public function get_label($html=true) {
-		if($html) return $this->label.' &'.$this->suit.';';
+		if($html) return '<div class="card '.$this->color.'">'.$this->label.' &'.$this->suit.';</div>';
 		else return $this->label.' of '.$this->suit;
 	}
 }
