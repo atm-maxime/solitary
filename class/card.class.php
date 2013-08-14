@@ -2,6 +2,10 @@
 
 class Solitary {
 	var $cardGame;
+	var $TDeck = array();
+	var $TDiscard = array();
+	var $TAces = array();
+	var $TSolitary = array();
 	
 	function __construct() {
 		$this->cardGame = new CardGame();
@@ -16,6 +20,12 @@ class CardGame {
 
 	function __construct($nbCards=52) {
 		$this->nbCards = $nbCards;
+	}
+	
+	public function __toString() {
+		foreach($this->TCard as $card) {
+			echo $card;
+		}
 	}
 	
 	public function init() {
@@ -42,6 +52,10 @@ class Card {
 		
 		$this->color = ($suit == 'hearts' || $suit == 'diams') ? 'red' : 'black';
 		$this->set_label();
+	}
+	
+	public function __toString() {
+		return $this->get_label().'<br />';
 	}
 	
 	private function set_label() {
