@@ -1,13 +1,21 @@
 <?php
 
 ini_set('display_errors', true);
-include('class/card.class.php');
+ini_set('max_execution_time', '30');
 
-/*$solitary = new Solitary();
-$solitary->create_random_game();
+include('class/solitary.class.php');
 
-file_put_contents('demo.dat', serialize($solitary));*/
+$solitary = new Solitary(52);
+//$solitary->create_random_game();
 
-$solitary = unserialize(file_get_contents('demo.dat'));
+//file_put_contents('demo2.dat', serialize($solitary));
+$solitary = unserialize(file_get_contents('demo2.dat'));
+
+$chemin = array();
+$solitary->get_solution($chemin);
+
+/*echo '<pre>';
+print_r($chemin);
+echo '</pre>';*/
 
 include('tpl/board.tpl.php');

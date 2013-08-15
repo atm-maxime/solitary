@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr" dir="ltr">
 <head>
 	<link rel="stylesheet" type="text/css" href="http://localhost/perso/midas_solitaire/css/main.css" />
-	<?/*<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>*/?>
+	<? /*<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> */?>
 	<script src="http://localhost/perso/midas_solitaire/js/solitary.js"></script>
 </head>
 <body>
@@ -20,13 +20,41 @@
 			?>
 		</div>
 		<div id="discard">
-			DISCARD
+			<?
+			foreach($solitary->TDiscard as $card) {
+				echo $card;
+			}
+			?>
 		</div>
 		<div id="aces">
-			<div class="col">H</div>
-			<div class="col">D</div>
-			<div class="col">C</div>
-			<div class="col">S</div>
+			<div class="col">
+			<?
+			foreach($solitary->TAces['hearts'] as $card) {
+				echo $card;
+			}
+			?>
+			</div>
+			<div class="col">
+			<?
+			foreach($solitary->TAces['diams'] as $card) {
+				echo $card;
+			}
+			?>
+			</div>
+			<div class="col">
+			<?
+			foreach($solitary->TAces['clubs'] as $card) {
+				echo $card;
+			}
+			?>
+			</div>
+			<div class="col">
+			<?
+			foreach($solitary->TAces['spades'] as $card) {
+				echo $card;
+			}
+			?>
+			</div>
 		</div>
 	</div>
 	<div id="solitary">
@@ -40,14 +68,26 @@
 		}
 		?>
 		<div class="button">
-			<input type="button" value="Chercher" />
+			<input type="button" name="search" value="Chercher" />
+			<hr>
+			Score : <?= $solitary->score ?>
 		</div>
 	</div>
 </div>
 <div id="cardlist">
 	<?
-	foreach($solitary->cardGame->TCard as $card) {
-		echo $card;
+	foreach($solitary->TCard as $card) {
+		echo
+		/*echo '<hr><pre>';
+		var_dump($move);
+		echo '</pre><hr>';*/ $card;
+	}
+	?>
+</div>
+<div id="solution">
+	<?
+	foreach($chemin as $i => $move) {
+		echo '<div class="step">'.$move['action'].'</div>'.$move['card'];
 	}
 	?>
 </div>
