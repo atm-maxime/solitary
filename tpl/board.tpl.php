@@ -86,8 +86,14 @@
 </div>
 <div id="solution">
 	<?
-	foreach($chemin as $i => $move) {
-		echo '<div class="step">'.$move['action'].'</div>'.$move['card'];
+	foreach ($solitary->TChemin as $i => $chemin) {
+		$score = $chemin['score'];
+		unset($chemin['score']);
+		echo '<div style="clear: left;"><hr>'.$i.' : '.$score.'<hr><div>';
+		foreach($chemin as $i => $move) {
+			echo '<div class="step">'.$move['action'].'</div>'.$move['card'];
+		}
+		echo '<hr>';
 	}
 	?>
 </div>
