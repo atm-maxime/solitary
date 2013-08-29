@@ -41,6 +41,10 @@
 		</div>
 		<div class="button">
 			<input type="button" name="search" value="Chercher" />
+			<form method="post">
+				<input type="text" name="step" value="[data.step]" />
+				<input type="submit" />
+			</form>
 			<hr>
 			Score : [data.score]
 		</div>
@@ -55,8 +59,10 @@
 		[path;block=div;sub1=path]
 		[path.$] - [path.score]
 		<hr>
-		<div class="step">[path_sub1.action; block=div]</div>
-		<div class="card [path_sub1.card.color; block=div]" code="[path_sub1.card.code]">[path_sub1.card.get_label; strconv=no]</div>
+		<div>[path_sub1; block=div]
+			<div class="step">[path_sub1.action]</div>
+			<div class="card [path_sub1.card.color]" code="[path_sub1.card.code]">[path_sub1.card.get_label; strconv=no]</div>
+		</div>
 	</div>
 </div>
 

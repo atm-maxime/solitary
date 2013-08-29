@@ -11,11 +11,11 @@ class Solitary extends CardGame {
 	var $acesLevel = 1;
 	var $round = 1;
 	var $blocked = false;
-	var $end = false;
+	var $finished = false;
 	var $currentScore = 0;
 	var $currentPath = array();
 	
-	var $nbMoveMax = 200;
+	var $nbMoveMax = 2;
 	
 	var $bestScore = 0;
 	var $bestPath = array();
@@ -62,7 +62,7 @@ class Solitary extends CardGame {
 		);
 	}
 	
-	private function reset_init_position() {
+	public function reset_init_position() {
 		foreach($this->TInit as $area => $TCards) {
 			$this->{$area} = $TCards;
 		}
@@ -72,48 +72,48 @@ class Solitary extends CardGame {
 	 * TODO : détecter un blocage et dans ce cas, permettre de déplacer des groupes de carte sans partir de la + haute
 	 */
 	public function get_solution() {
-		if($this->game_finished()) {
-			$this->end = true;
+		if(count($this->currentPath) >= $this->nbMoveMax || $this->is_game_finished()) { // Blockage à N coups pour éviter la boucle infinie
+			$this->TPath[] = array('score' => $this->currentScore, 'path' => $this->currentPath);
+			if($this->currentScore >= $this->bestScore) {
+				$this->bestScore = $this->currentScore;
+				$this->bestPath = $this->currentPath;
+			}
+			$this->finished = true;
+		} else {
+			$this->finished = false;
 		}
 		
-		while(!$this->end && !$this->blocked) {
-			if(count($this->currentPath) >= $this->nbMoveMax) $this->blocked = true; // Blockage à N coups pour éviter la boucle infinie
+		while(!$this->finished && !$this->blocked) {
+			if($this->is_game_finished()) {
+				$this->finished = true;
+				break;
+			}
 			
 			$move = $this->get_next_move();
+			
 			if($move === false) {
 				$this->blocked = true;
-			} else if(!empty($move[0])) {
+			} else {
+				$this->blocked = false;
+				if(empty($move[0])) $move = array($move);
+				
 				foreach($move as $mv) {
 					$this->do_move($mv);
 					$this->calculate_score($mv);
 					$this->currentPath[] = $mv;
 					
-					// A revoir pour le récursif et trouver la meilleure solution
+					// Appel récursif pour les différents mouvements possibles
 					$this->get_solution();
 					
 					array_pop($this->currentPath);
-					$tmp = $mv['from'];
-					$mv['from'] = $mv['to'];
-					$mv['to'] = $tmp;
+					$tmp = &$mv['from'];
+					$mv['from'] = &$mv['to'];
+					$mv['to'] = &$tmp;
+					
 					$this->do_move($mv);
 					$this->calculate_score($mv, 'remove');
 				}
-				
-			} else if($this->infinite_move($move)) {
-				$this->blocked = true;
-			} else {
-				$this->blocked = false;
-				
-				$this->do_move($move);
-				$this->calculate_score($move);
-				$this->currentPath[] = $move;
 			}
-		}
-		
-		$this->TPath[] = array('score' => $this->currentScore, 'path' => $this->currentPath);
-		if($this->currentScore > $this->bestScore) {
-			$this->bestScore = $this->currentScore;
-			$this->bestPath = $this->currentPath;
 		}
 	}
 	
@@ -463,7 +463,7 @@ class Solitary extends CardGame {
 		return false;
 	}
 	
-	private function game_finished() {
+	private function is_game_finished() {
 		$finished = true;
 		foreach($this->TAces as $suit => $TCard) {
 			if(count($TCard) < 13) $finished = false;
