@@ -1,13 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr" dir="ltr">
 <head>
-	<link rel="stylesheet" type="text/css" href="http://localhost/perso/midas_solitaire/css/main.css" />
-	<? /*<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> */?>
-	<script src="http://localhost/perso/midas_solitaire/js/solitary.js"></script>
+	<link rel="stylesheet" type="text/css" href="<?= HTTP ?>css/main.css" />
+	<script src="<?= HTTP ?>js/jquery-2.0.3.min.js"></script>
+	<script src="<?= HTTP ?>js/solitary.js"></script>
 </head>
+
 <body>
 <center>
-	<hr>MIDAS SOLITAIRE<hr>
+	<hr>SOLITAIRE<hr>
 </center>
 
 <div id="board">

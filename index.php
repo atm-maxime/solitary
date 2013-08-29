@@ -1,9 +1,8 @@
 <?php
 
-ini_set('display_errors', true);
-ini_set('max_execution_time', '30');
 
-include('class/solitary.class.php');
+
+include('./config.php');
 
 $solitary = new Solitary(52);
 $solitary->create_random_game();
