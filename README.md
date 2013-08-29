@@ -1,2 +1,1 @@
-solitary
-========
+Jeu de carte Solitaire développé en PHP
