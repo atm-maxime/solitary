@@ -57,7 +57,8 @@ class Card {
 	}
 	
 	public function get_label($html=true) {
-		if($html) return '<div class="card '.$this->color.'" code="'.$this->code.'">'.$this->label.' &'.$this->suit.';</div>';
+		//if($html) return '<div class="card '.$this->color.'" code="'.$this->code.'">'.$this->label.' &'.$this->suit.';</div>';
+		if($html) return $this->label.' &'.$this->suit.';';
 		else return $this->label.' of '.$this->suit;
 	}
 }
