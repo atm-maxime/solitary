@@ -2,16 +2,13 @@
 
 include('./config.php');
 
-$step = (!empty($_REQUEST['step']) ? $_REQUEST['step'] : 0);
-
 $solitary = new Solitary(52);
 $solitary->create_random_game();
 
 //file_put_contents('demo2.dat', serialize($solitary));
-$solitary = unserialize(file_get_contents('demo.dat'));
-$solitary->nbMoveMax = $step;
+//$solitary = unserialize(file_get_contents('demo.dat'));
 
-$solitary->get_solution();
+//$solitary->get_solution();
 //$solitary->reset_init_position();
 
 //pre($solitary->TBoard);
@@ -27,19 +24,15 @@ echo $board->render(
 		,'aces_clubs' => $solitary->TAces['clubs']
 		,'aces_spades' => $solitary->TAces['spades']
 		,'board' => $solitary->TBoard
-		,'path' => array(array('path' => $solitary->bestPath, 'score' => $solitary->bestScore))
-		,'path' => $solitary->TPath
+		,'path' => $solitary->bestPath
 		,'allcards' => $solitary->TCard
 	)
 	, array(
 		'data' => array(
 			'score' => $solitary->bestScore
-			,'step' => $step + 1
 		)
 		,'view' => array(
 			'http' => HTTP
 		)
 	)
 );
-
-//include('tpl/board.tpl.php');

@@ -3,6 +3,7 @@
 <head>
 	<link rel="stylesheet" type="text/css" href="[view.http; strconv=no]css/main.css" />
 	<script src="[view.http; strconv=no]js/jquery-2.0.3.min.js"></script>
+	<script src="[view.http; strconv=no]js/jquery-ui.min.js"></script>
 	<script src="[view.http; strconv=no]js/solitary.js"></script>
 </head>
 
@@ -11,6 +12,9 @@
 	<hr>SOLITAIRE<hr>
 </center>
 
+<div id="cardlist">
+	<div class="card [allcards.color; block=div]" code="[allcards.code]">[allcards.get_label; strconv=no]</div>
+</div>
 <div id="board">
 	<div id="top">
 		<div id="deck">
@@ -34,35 +38,22 @@
 			</div>
 		</div>
 	</div>
-	<div id="solitary">
+	<div id="solitary_board">
 		<div class="col">
 			[board;block=div;sub1]
 			<div class="card [board_sub1.color; block=div]" code="[board_sub1.code]">[board_sub1.get_label; strconv=no]</div>
 		</div>
 		<div class="button">
-			<input type="button" name="search" value="Chercher" />
-			<form method="post">
-				<input type="text" name="step" value="[data.step]" />
-				<input type="submit" />
-			</form>
-			<hr>
-			Score : [data.score]
+			<input type="button" name="search" value="Chercher" /><br />
+			<span class="score">[data.score]</span>
 		</div>
 	</div>
 </div>
-<div id="cardlist">
-	<div class="card [allcards.color; block=div]" code="[allcards.code]">[allcards.get_label; strconv=no]</div>
-</div>
+
 <div id="solution">
-	<div style="clear: left;">
-		<hr>
-		[path;block=div;sub1=path]
-		[path.$] - [path.score]
-		<hr>
-		<div>[path_sub1; block=div]
-			<div class="step">[path_sub1.action]</div>
-			<div class="card [path_sub1.card.color]" code="[path_sub1.card.code]">[path_sub1.card.get_label; strconv=no]</div>
-		</div>
+	<div>[path; block=div]
+		<div class="step">[path.action]</div>
+		<div class="card [path.card.color]" code="[path.card.code]">[path.card.get_label; strconv=no]</div>
 	</div>
 </div>
 

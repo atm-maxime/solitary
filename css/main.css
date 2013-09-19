@@ -11,17 +11,16 @@
 }
 
 #cardlist {
-	width: 432px;
+	width: 172px;
 	height: 600px;
 	padding: 10px;
 	margin: 10px;
 	float: left;
 	border: 1px solid #000000;
-	display: none;
 }
 
 #solution {
-	width: 432px;
+	width: 503px;
 	height: 600px;
 	padding: 10px;
 	margin: 10px;
@@ -56,7 +55,7 @@
 	float: left;
 }
 
-#solitary {
+#solitary_board {
 	clear: left;
 }
 
@@ -71,7 +70,7 @@ div.col {
 	position: relative;
 }
 
-#solitary div.col {
+#solitary_board div.col {
 	height: 350px;
 }
 
@@ -86,6 +85,7 @@ div.card {
 	text-align: center;
 	float: left;
 	background: #FFFFFF;
+	cursor: pointer;
 }
 
 div.card.red {
@@ -99,6 +99,7 @@ div.card.black {
 }
 
 #deck div.card,
+#cardlist div.card,
 #solution div.card {
 	width: 33px;
 	height: 20px;
@@ -111,7 +112,7 @@ div.card.black {
 	position: absolute;
 }
 
-#solitary div.card {
+#solitary_board div.card {
 	height: 20px;
 }
 

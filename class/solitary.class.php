@@ -15,7 +15,7 @@ class Solitary extends CardGame {
 	var $currentScore = 0;
 	var $currentPath = array();
 	
-	var $nbMoveMax = 2;
+	var $nbMoveMax = 200;
 	
 	var $bestScore = 0;
 	var $bestPath = array();
@@ -28,6 +28,10 @@ class Solitary extends CardGame {
 		
 		foreach($this->TSuit as $suit) {
 			$this->TAces[$suit] = array();
+		}
+		
+		for ($i=0; $i < 7; $i++) { 
+			$this->TBoard[$i] = array();
 		}
 	}
 	
