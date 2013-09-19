@@ -3,7 +3,10 @@
 include('./config.php');
 
 $solitary = new Solitary(52);
-$solitary->create_random_game();
+
+if(isset($_REQUEST['random'])) {
+	$solitary->create_random_game();
+}
 
 //file_put_contents('demo2.dat', serialize($solitary));
 //$solitary = unserialize(file_get_contents('demo.dat'));

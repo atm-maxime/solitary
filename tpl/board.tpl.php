@@ -14,6 +14,10 @@
 
 <div id="cardlist">
 	<div class="card [allcards.color; block=div]" code="[allcards.code]">[allcards.get_label; strconv=no]</div>
+	<div class="button">
+		<input type="button" name="random" value="Al&eacute;atoire" />
+		<input type="button" name="perso" value="Perso" />
+	</div>
 </div>
 <div id="board">
 	<div id="top">

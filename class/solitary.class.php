@@ -38,7 +38,7 @@ class Solitary extends CardGame {
 	public function create_random_game() {
 		shuffle($this->TCard);
 		$i = 0;
-		foreach($this->TCard as $card) {
+		foreach($this->TCard as $code => $card) {
 			if(count($this->TDeck) < 24) { // Fill the deck with the 24 first cards
 				$this->TDeck[] = $card;
 			} else { // Fill the board with the others
@@ -52,6 +52,8 @@ class Solitary extends CardGame {
 					$i++;
 				}
 			}
+			
+			unset($this->TCard[$code]);
 		}
 		
 		$this->save_init_position();
@@ -76,7 +78,7 @@ class Solitary extends CardGame {
 	 * TODO : détecter un blocage et dans ce cas, permettre de déplacer des groupes de carte sans partir de la + haute
 	 */
 	public function get_solution() {
-		if(count($this->currentPath) >= $this->nbMoveMax || $this->is_game_finished()) { // Blockage à N coups pour éviter la boucle infinie
+		if(count($this->currentPath) >= $this->nbMoveMax || $this->is_game_finished() || $this->blocked == true) { // Blockage à N coups pour éviter la boucle infinie
 			$this->TPath[] = array('score' => $this->currentScore, 'path' => $this->currentPath);
 			if($this->currentScore >= $this->bestScore) {
 				$this->bestScore = $this->currentScore;

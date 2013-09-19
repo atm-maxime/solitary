@@ -3,7 +3,9 @@ $(document).ready(function() {
 	$('#cardlist').addClass('connectedSortable');
 	$('#deck').addClass('connectedSortable');
 	$('#solitary_board div.col').addClass('connectedSortable');
-	$('#cardlist, #deck, #solitary_board div.col').sortable({
+	$('#aces div.col').addClass('connectedSortable');
+	$('#discard').addClass('connectedSortable');
+	$('#cardlist, #deck, #solitary_board div.col, #aces div.col, #discard').sortable({
 		connectWith: ".connectedSortable"
 	});
 	//$('#cardlist div.card').draggable();
@@ -40,5 +42,13 @@ $(document).ready(function() {
 				dataType: 'json'
 			});
 		}
+	});
+	
+	$('input[name="random"]').click(function() {
+		document.location.href = 'http://localhost/perso/solitary/index.php?random';
+	});
+	
+	$('input[name="perso"]').click(function() {
+		document.location.href = 'http://localhost/perso/solitary/index.php';
 	});
 });
