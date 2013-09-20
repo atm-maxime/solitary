@@ -22,7 +22,7 @@
 <div id="board">
 	<div id="top">
 		<div id="deck">
-			<div class="card [deck.color; block=div]" code="[deck.code]">[deck.get_label; strconv=no]</div>
+			<div class="card [deck.color; block=div] [deck.display;if [val]=1;then 'front';else 'back']" code="[deck.code]">[deck.get_label; strconv=no]</div>
 		</div>
 		<div id="discard">
 			<div class="card [discard.color; block=div]" code="[discard.code]">[discard.get_label; strconv=no]</div>
@@ -45,7 +45,7 @@
 	<div id="solitary_board">
 		<div class="col">
 			[board;block=div;sub1]
-			<div class="card [board_sub1.color; block=div]" code="[board_sub1.code]">[board_sub1.get_label; strconv=no]</div>
+			<div class="card [board_sub1.color; block=div] [board_sub1.display;if [val]=1;then 'front';else 'back']" code="[board_sub1.code]">[board_sub1.get_label; strconv=no]</div>
 		</div>
 		<div class="button">
 			<input type="button" name="search" value="Chercher" /><br />

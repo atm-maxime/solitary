@@ -20,17 +20,10 @@ switch ($_REQUEST['action']) {
 function search_solution() {
 	$solitary = new Solitary(52);
 	
-	$TDeck = $_REQUEST['TDeck'];
-	foreach ($TDeck as $code) {
-		$solitary->TDeck[] = $solitary->TCard[$code];
-	}
+	$solitary->create_perso_game($_REQUEST['TDeck'], $_REQUEST['TBoard']);
 	
-	$TBoard = $_REQUEST['TBoard'];
-	foreach ($TBoard as $col => $TCards) {
-		foreach ($TCards as $code) {
-			$solitary->TBoard[$col][] = $solitary->TCard[$code];
-		}
-	}
+	// Sauvegarde pour tests
+	file_put_contents('save/'.date('Y-m-d H:i:s').'.sol', serialize($solitary->TInit));
 	
 	$solitary->get_solution();
 	

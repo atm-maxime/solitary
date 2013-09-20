@@ -49,11 +49,34 @@ class Solitary extends CardGame {
 				$this->TBoard[$i][] = $card;
 				
 				if(count($this->TBoard[$i]) > $i) {
+					$iLast = count($this->TBoard[$i]) - 1;
+					$this->TBoard[$i][$iLast]->display = true;
 					$i++;
 				}
 			}
 			
+			$this->TDeck[count($this->TDeck) - 1]->display = true;
+			
 			unset($this->TCard[$code]);
+		}
+		
+		$this->save_init_position();
+	}
+	
+	public function create_perso_game($TDeck, $TBoard) {
+		foreach ($TDeck as $code) {
+			$this->TDeck[] = $this->TCard[$code];
+		}
+		
+		$this->TDeck[count($this->TDeck) - 1]->display = true;
+		
+		foreach ($TBoard as $col => $TCards) {
+			foreach ($TCards as $code) {
+				$this->TBoard[$col][] = $this->TCard[$code];
+			}
+			
+			$iLast = count($this->TBoard[$col]) - 1;
+			$this->TBoard[$col][$iLast]->display = true;
 		}
 		
 		$this->save_init_position();
@@ -166,7 +189,15 @@ class Solitary extends CardGame {
 		$score = 0;
 		
 		switch ($move['action']) {
-			case 'up': $score = 50;
+			case 'up':
+				$cardScore = ($move['card']->rank < 10) ? ($move['card']->rank + 1) : 10;
+				$cardScore *= 10; 
+				$score = 110 - $cardScore;
+				
+				if(!empty($move['from'])) {
+					$score += 20;
+				}
+				
 				break;
 			case 'dn': $score = 20;
 				break;
@@ -281,7 +312,8 @@ class Solitary extends CardGame {
 				}
 				
 				$jCol = $this->can_move_card_to_board($card);
-				if($jCol !== false && ($iLast >= 0 || $card->rank != 12)) { // Vérification pour ne pas déplacer un roi d'une colonne vide à une autre
+				if($jCol !== false && ($iLast >= 0 || $card->rank != 12) && !$this->card_has_moved($card)) { // Vérification pour ne pas déplacer un roi d'une colonne vide à une autre
+				//if($jCol !== false && $card != $this->currentPath[count($this->currentPath) - 1]['card']) { // Amélioration : on ne déplace jamais 2 fois de suite la même carte
 					$TMove[] = array(
 						'action' => 'mv'
 						,'from' => &$this->TBoard[$iCol]
@@ -447,7 +479,20 @@ class Solitary extends CardGame {
 	}
 	
 	private function can_be_linked(&$parentCard, &$childCard) {
-		return ($parentCard->rank -1 == $childCard->rank && $parentCard->color != $childCard->color);
+		return ($parentCard->rank -1 == $childCard->rank && $parentCard->color != $childCard->color && $parentCard->display);
+	}
+	
+	/**
+	 * Vérifie si une carte a déjà été déplacée
+	 */
+	private function card_has_moved(&$card) {
+		foreach($this->currentPath as $move) {
+			if(($move['action'] == 'mv' || $move['action'] == 'dn') && $move['card']->code == $card->code) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**

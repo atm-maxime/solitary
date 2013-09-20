@@ -7,7 +7,17 @@ $(document).ready(function() {
 	$('#discard').addClass('connectedSortable');
 	$('#cardlist, #deck, #solitary_board div.col, #aces div.col, #discard').sortable({
 		connectWith: ".connectedSortable"
-	});
+		,receive: function( event, ui ) {
+			ui.item.attr('style', null);
+			if(ui.item.parent('.connectedSortable').hasClass('col')) {
+				ui.item.css('z-index', ui.item.attr('code'));
+			} else {
+				ui.item.css('z-index', ui.item.parent('.connectedSortable').find('.card').length);
+			}
+			
+			ui.sender.find('.card:last').removeClass('back').addClass('front');
+		}
+	}).disableSelection();
 	//$('#cardlist div.card').draggable();
 	//$('#deck').droppable();
 	//$('#solitary_board div.col').droppable();

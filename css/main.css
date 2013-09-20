@@ -98,6 +98,10 @@ div.card.black {
 	color: black;
 }
 
+div.card.back {
+	background-color: #A7A7A7;
+}
+
 #deck div.card,
 #cardlist div.card,
 #solution div.card {
@@ -110,6 +114,11 @@ div.card.black {
 #discard div.card,
 #aces div.card {
 	position: absolute;
+}
+
+#deck div.card,
+#solitary_board div.card {
+	position: relative;
 }
 
 #solitary_board div.card {

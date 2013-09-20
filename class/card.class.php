@@ -32,12 +32,14 @@ class Card {
 	var $value;
 	var $label;
 	var $color;
+	var $display; // Carte face cachée ou face visible
 	
 	function __construct($suit, $code, $rank, $value=0) {
 		$this->suit = $suit;
 		$this->code = $code;
 		$this->rank = $rank;
 		$this->value = $value;
+		$this->display = false;
 		
 		$this->color = ($suit == 'hearts' || $suit == 'diams') ? 'red' : 'black';
 		$this->set_label();
