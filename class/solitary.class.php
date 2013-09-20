@@ -135,18 +135,21 @@ class Solitary extends CardGame {
 					$this->get_solution();
 					
 					array_pop($this->currentPath);
-					$tmp = &$mv['from'];
-					$mv['from'] = &$mv['to'];
-					$mv['to'] = &$tmp;
 					
-					$this->do_move($mv);
+					$this->do_move($mv, 'reverse');
 					$this->calculate_score($mv, 'remove');
 				}
 			}
 		}
 	}
 	
-	private function do_move(&$move) {
+	private function do_move(&$move, $mode='straight') {
+		if($mode == 'reverse') { // Inversion from et to
+			$tmp = &$move['from'];
+			$move['from'] = &$move['to'];
+			$move['to'] = &$tmp;
+		}
+		
 		switch ($move['action']) {
 			case 'up':
 			case 'dn':
@@ -159,9 +162,10 @@ class Solitary extends CardGame {
 				
 			case 'mv':
 			case 'mt':
-				$TCards = array_splice($move['from'], $move['nb'] * -1);
+				$TCards = array_splice($move['from'], $move['nb'] * - 1);
 				$move['to'] = array_merge($move['to'], $TCards);
 				$move['card'] = &$TCards[0];
+				
 				break;
 			
 			
@@ -171,7 +175,7 @@ class Solitary extends CardGame {
 				break;*/
 				
 			case 'rs':
-				$move['to'] = $move['from'];
+				$move['to'] = array_reverse($move['from']);
 				$move['from'] = array();
 				$move['card'] = &$move['to'][0];
 				$this->round++;
@@ -181,6 +185,8 @@ class Solitary extends CardGame {
 				
 				break;
 		}
+		
+		$this->set_card_visibility($move, $mode);
 		
 		//echo $move['action'].' '.$move['card'].'<br />';
 	}
@@ -220,6 +226,15 @@ class Solitary extends CardGame {
 		
 		if($mode == 'add') $this->currentScore += $score;
 		else $this->currentScore -= $score;
+	}
+	
+	private function set_card_visibility(&$move, $mode) {
+		// La carte suivante de l'emplacement d'origine est maintenant visible
+		$iLastFrom = count($move['from']) - 1;
+		if($iLastFrom >= 0) $move['from'][$iLastFrom]->display = true;
+		// La carte parente de l'emplacement de destination n'est plus visible si mouvement inversé
+		$iLastTo = count($move['to']) - 2;
+		if($iLastTo >= 0 && $mode == 'reverse') $move['to'][$iLastTo]->display = false;
 	}
 	
 	private function get_next_move() {

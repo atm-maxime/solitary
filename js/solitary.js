@@ -18,9 +18,15 @@ $(document).ready(function() {
 			ui.sender.find('.card:last').removeClass('back').addClass('front');
 		}
 	}).disableSelection();
-	//$('#cardlist div.card').draggable();
-	//$('#deck').droppable();
-	//$('#solitary_board div.col').droppable();
+	
+	// Reset du deck
+	$('#deck').dblclick(function() {
+		if($('#deck div.card').length == 0 && $('#discard div.card').length > 0) {
+			$('#discard div.card').each(function() {
+				$('#deck').append($(this));
+			});
+		}
+	});
 	
 	
 	// Lancement de la recherche de solution
