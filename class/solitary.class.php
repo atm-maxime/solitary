@@ -244,14 +244,19 @@ class Solitary extends CardGame {
 		
 		// Test si une carte peut être déplacée
 		$move = $this->can_move_cards();
+		//if($move !== false) return $move;
+		
+		// Test si la carte du deck peut descendre
+		$move2 = $this->can_put_deck_card_down();
+		if($move !== false && $move2 !== false) {
+			array_push($move, $move2);
+			return $move;
+		} 
 		if($move !== false) return $move;
+		if($move2 !== false) return $move2;
 		
 		// Test si une carte peut être montée suite à un déplacement spécial
 		//$move = $this->can_put_a_card_up_after_move();
-		if($move !== false) return $move;
-		
-		// Test si la carte du deck peut descendre
-		$move = $this->can_put_deck_card_down();
 		if($move !== false) return $move;
 		
 		// Pioche
