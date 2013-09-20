@@ -102,11 +102,7 @@ class Solitary extends CardGame {
 	 */
 	public function get_solution() {
 		if(count($this->currentPath) >= $this->nbMoveMax || $this->is_game_finished() || $this->blocked == true) { // Blockage à N coups pour éviter la boucle infinie
-			$this->TPath[] = array('score' => $this->currentScore, 'path' => $this->currentPath);
-			if($this->currentScore >= $this->bestScore) {
-				$this->bestScore = $this->currentScore;
-				$this->bestPath = $this->currentPath;
-			}
+			$this->save_current_solution();
 			$this->finished = true;
 		} else {
 			$this->finished = false;
@@ -257,7 +253,7 @@ class Solitary extends CardGame {
 		
 		// Test si une carte peut être montée suite à un déplacement spécial
 		//$move = $this->can_put_a_card_up_after_move();
-		if($move !== false) return $move;
+		//if($move !== false) return $move;
 		
 		// Pioche
 		$move = $this->can_turn_from_deck();
@@ -534,11 +530,19 @@ class Solitary extends CardGame {
 		return false;
 	}
 	
-	private function is_game_finished() {
+	public function is_game_finished() {
 		$finished = true;
 		foreach($this->TAces as $suit => $TCard) {
 			if(count($TCard) < 13) $finished = false;
 		}
 		return $finished;
+	}
+	
+	private function save_current_solution() {
+		$this->TPath[] = array('score' => $this->currentScore, 'path' => $this->currentPath);
+		if($this->currentScore >= $this->bestScore) {
+			$this->bestScore = $this->currentScore;
+			$this->bestPath = $this->currentPath;
+		}
 	}
 }

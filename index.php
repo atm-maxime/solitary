@@ -9,8 +9,8 @@ if(isset($_REQUEST['random'])) {
 }
 
 //file_put_contents('demo2.dat', serialize($solitary));
-$solitary->TInit = unserialize(file_get_contents('save/2013-09-20 12:07:37.sol'));
-$solitary->reset_init_position();
+//$solitary->TInit = unserialize(file_get_contents('save/2013-09-20 12:07:37.sol'));
+//$solitary->reset_init_position();
 
 //$solitary->get_solution();
 //$solitary->reset_init_position();
