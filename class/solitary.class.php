@@ -100,7 +100,7 @@ class Solitary extends CardGame {
 	/**
 	 * TODO : détecter un blocage et dans ce cas, permettre de déplacer des groupes de carte sans partir de la + haute
 	 */
-	public function get_solution() {
+	public function get_solution2() {
 		if(count($this->currentPath) >= $this->nbMoveMax || $this->is_game_finished() || $this->blocked == true) { // Blockage à N coups pour éviter la boucle infinie
 			$this->save_current_solution();
 			$this->finished = true;
@@ -135,6 +135,30 @@ class Solitary extends CardGame {
 					$this->do_move($mv, 'reverse');
 					$this->calculate_score($mv, 'remove');
 				}
+			}
+		}
+	}
+	
+	public function get_solution() {
+		$move = $this->get_next_move();
+		
+		if($move === false) {
+			$this->save_current_solution();
+		} else {
+			if(empty($move[0])) $move = array($move);
+			
+			foreach($move as $mv) {
+				$this->do_move($mv);
+				$this->calculate_score($mv);
+				$this->currentPath[] = $mv;
+				
+				// Appel récursif pour les différents mouvements possibles
+				$this->get_solution();
+				
+				array_pop($this->currentPath);
+				
+				$this->do_move($mv, 'reverse');
+				$this->calculate_score($mv, 'remove');
 			}
 		}
 	}
@@ -257,9 +281,10 @@ class Solitary extends CardGame {
 		
 		// Pioche
 		$move = $this->can_turn_from_deck();
+		if($this->infinite_move($move)) return false;
 		if($move !== false) return $move;
 		
-		return $move;
+		return false;
 	}
 	
 	/**
