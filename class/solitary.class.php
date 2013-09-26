@@ -82,7 +82,7 @@ class Solitary extends CardGame {
 		$this->save_init_position();
 	}
 	
-	private function save_init_position() {
+	public function save_init_position() {
 		$this->TInit = array(
 			'TDeck' => $this->TDeck
 			,'TDiscard' => $this->TDiscard
@@ -97,107 +97,103 @@ class Solitary extends CardGame {
 		}
 	}
 	
-	/**
-	 * TODO : détecter un blocage et dans ce cas, permettre de déplacer des groupes de carte sans partir de la + haute
-	 */
-	public function get_solution2() {
-		if(count($this->currentPath) >= $this->nbMoveMax || $this->is_game_finished() || $this->blocked == true) { // Blockage à N coups pour éviter la boucle infinie
-			$this->save_current_solution();
-			$this->finished = true;
-		} else {
-			$this->finished = false;
-		}
-		
-		while(!$this->finished && !$this->blocked) {
-			if($this->is_game_finished()) {
-				$this->finished = true;
-				break;
-			}
-			
-			$move = $this->get_next_move();
-			
-			if($move === false) {
-				$this->blocked = true;
-			} else {
-				$this->blocked = false;
-				if(empty($move[0])) $move = array($move);
-				
-				foreach($move as $mv) {
-					$this->do_move($mv);
-					$this->calculate_score($mv);
-					$this->currentPath[] = $mv;
-					
-					// Appel récursif pour les différents mouvements possibles
-					$this->get_solution();
-					
-					array_pop($this->currentPath);
-					
-					$this->do_move($mv, 'reverse');
-					$this->calculate_score($mv, 'remove');
-				}
-			}
-		}
-	}
-	
-	public function get_solution() {
-		$move = $this->get_next_move();
+	public function get_solution($currentPath, $currentScore, $TGame) {
+		$move = $this->get_next_move($TGame, $currentPath);
 		
 		if($move === false) {
-			$this->save_current_solution();
+			$this->save_current_solution($currentPath, $currentScore);
 		} else {
 			if(empty($move[0])) $move = array($move);
 			
 			foreach($move as $mv) {
-				$this->do_move($mv);
-				$this->calculate_score($mv);
-				$this->currentPath[] = $mv;
-				
+				$this->do_move($mv, $currentScore, $TGame);
+				$currentPath[] = $mv;
+				/*if(count($currentPath) == 20) {
+					pre($TGame);
+					exit;
+				}*/
 				// Appel récursif pour les différents mouvements possibles
-				$this->get_solution();
-				
-				array_pop($this->currentPath);
-				
-				$this->do_move($mv, 'reverse');
-				$this->calculate_score($mv, 'remove');
+				$this->get_solution($currentPath, $currentScore, $TGame);
 			}
 		}
 	}
 	
-	private function do_move(&$move, $mode='straight') {
-		if($mode == 'reverse') { // Inversion from et to
-			$tmp = &$move['from'];
-			$move['from'] = &$move['to'];
-			$move['to'] = &$tmp;
-		}
-		
+	private function do_move(&$move, &$currentScore, &$TGame) {
 		switch ($move['action']) {
 			case 'up':
-			case 'dn':
-			case 'tn':
+				// Mouvement
 				$card = array_pop($move['from']);
 				$move['to'][] = $card;
 				$move['card'] = &$card;
-				if($move['action'] == 'up') $this->check_aces_level();
+				
+				// Vérification du niveau des cartes montées
+				$this->check_aces_level($TGame);
+				
+				// Calcul score
+				$cardScore = ($card->rank < 10) ? ($card->rank + 1) : 10;
+				$cardScore *= 10;
+				$score = 110 - $cardScore;
+				$currentScore += $score;
+				
+				// Carte découverte
+				$iLast = count($move['from']) - 1;
+				if(!empty($move['from'][$iLast])) {
+					$move['from'][$iLast]->display = true;
+					$currentScore += 20;
+				}
+				
+				break;
+				
+			case 'dn':
+				// Mouvement
+				$card = array_pop($move['from']);
+				$move['to'][] = $card;
+				$move['card'] = &$card;
+				
+				// Calcul score
+				$currentScore += 20;
+				
+				// Carte découverte
+				$iLast = count($move['from']) - 1;
+				if(!empty($move['from'][$iLast])) {
+					$move['from'][$iLast]->display = true;
+					$currentScore += 20;
+				}
+				
+				break;
+				
+			case 'tn':
+				// Mouvement
+				$card = array_pop($move['from']);
+				$move['to'][] = $card;
+				$move['card'] = &$card;
+				
 				break;
 				
 			case 'mv':
-			case 'mt':
+				// Mouvement
 				$TCards = array_splice($move['from'], $move['nb'] * - 1);
 				$move['to'] = array_merge($move['to'], $TCards);
 				$move['card'] = &$TCards[0];
 				
+				// Carte découverte
+				$iLast = count($move['from']) - 1;
+				if(!empty($move['from'][$iLast])) {
+					$move['from'][$iLast]->display = true;
+					$currentScore += 20;
+				}
+
 				break;
-			
-			
-			/*	$card = array_pop($move['from']);
-				$move['to'][] = $card;
-				$move['card'] = &$card;
-				break;*/
 				
 			case 'rs':
+				// Mouvement
 				$move['to'] = array_reverse($move['from']);
 				$move['from'] = array();
 				$move['card'] = &$move['to'][0];
+				
+				// Calcul score
+				$currentScore -= 200;
+				
 				$this->round++;
 				break;
 			
@@ -205,69 +201,19 @@ class Solitary extends CardGame {
 				
 				break;
 		}
-		
-		$this->set_card_visibility($move, $mode);
-		
-		//echo $move['action'].' '.$move['card'].'<br />';
 	}
 	
-	private function calculate_score(&$move, $mode='add') {
-		$score = 0;
-		
-		switch ($move['action']) {
-			case 'up':
-				$cardScore = ($move['card']->rank < 10) ? ($move['card']->rank + 1) : 10;
-				$cardScore *= 10;
-				$score = 110 - $cardScore;
-				
-				break;
-			case 'dn': $score = 20;
-				break;
-			case 'mv':
-			case 'mt':
-				break;
-			
-			case 'tn':
-				
-				break;
-			case 'rs': $score = -200;
-				break;
-			
-			default:
-				break;
-		}
-		
-		if($mode == 'add') $this->currentScore += $score;
-		else $this->currentScore -= $score;
-	}
-	
-	private function set_card_visibility(&$move, $mode) {
-		// La carte suivante de l'emplacement d'origine est maintenant visible
-		$iLastFrom = count($move['from']) - 1;
-		if($iLastFrom >= 0) {
-			$move['from'][$iLastFrom]->display = true;
-			$this->currentScore += 20;
-		}
-		
-		// La carte parente de l'emplacement de destination n'est plus visible si mouvement inversé
-		$iLastTo = count($move['to']) - 2;
-		if($iLastTo >= 0 && $mode == 'reverse') {
-			$move['to'][$iLastTo]->display = false;
-			$this->currentScore -= 20;
-		}
-	}
-	
-	private function get_next_move() {
+	private function get_next_move(&$TGame, &$currentPath) {
 		// Test si une carte peut monter
-		$move = $this->can_put_a_card_up();
+		$move = $this->can_put_a_card_up($TGame);
 		if($move !== false) return $move;
 		
 		// Test si une carte peut être déplacée
-		$move = $this->can_move_cards();
+		$move = $this->can_move_cards($TGame, $currentPath);
 		//if($move !== false) return $move;
 		
 		// Test si la carte du deck peut descendre
-		$move2 = $this->can_put_deck_card_down();
+		$move2 = $this->can_put_deck_card_down($TGame);
 		if($move !== false && $move2 !== false) {
 			array_push($move, $move2);
 			return $move;
@@ -275,13 +221,12 @@ class Solitary extends CardGame {
 		if($move !== false) return $move;
 		if($move2 !== false) return $move2;
 		
-		// Test si une carte peut être montée suite à un déplacement spécial
-		//$move = $this->can_put_a_card_up_after_move();
-		//if($move !== false) return $move;
-		
 		// Pioche
-		$move = $this->can_turn_from_deck();
-		if($this->infinite_move($move)) return false;
+		$move = $this->can_turn_from_deck($TGame);
+		if($this->infinite_move($move, $currentPath, $TGame)) {
+			//echo 't ';
+			return false;
+		}
 		if($move !== false) return $move;
 		
 		return false;
@@ -290,31 +235,31 @@ class Solitary extends CardGame {
 	/**
 	 * Recherche si un déplacement d'une carte du plateau ou de la défausse peut être montée
 	 */
-	private function can_put_a_card_up() {
+	private function can_put_a_card_up(&$TGame) {
 		// Recherche sur le plateau
-		foreach($this->TBoard as $iCol => $TCard) {
+		foreach($TGame['TBoard'] as $iCol => $TCard) {
 			$iLast = count($TCard) - 1;
 			if(!empty($TCard[$iLast])) {
 				$card = &$TCard[$iLast];
-				if($this->can_move_card_to_aces($card)) {
+				if($this->can_move_card_to_aces($TGame, $card)) {
 					return array(
 						'action' => 'up'
-						,'from' => &$this->TBoard[$iCol]
-						,'to' => &$this->TAces[$card->suit]
+						,'from' => &$TGame['TBoard'][$iCol]
+						,'to' => &$TGame['TAces'][$card->suit]
 					);
 				}
 			}
 		}
 		
 		// Recherche pour la dernière carte de la défausse
-		$iLast = count($this->TDiscard) - 1;
-		if(!empty($this->TDiscard[$iLast])) {
-			$card = &$this->TDiscard[$iLast];
-			if($this->can_move_card_to_aces($card)) {
+		$iLast = count($TGame['TDiscard']) - 1;
+		if(!empty($TGame['TDiscard'][$iLast])) {
+			$card = &$TGame['TDiscard'][$iLast];
+			if($this->can_move_card_to_aces($TGame, $card)) {
 				return array(
 					'action' => 'up'
-					,'from' => &$this->TDiscard
-					,'to' => &$this->TAces[$card->suit]
+					,'from' => &$TGame['TDiscard']
+					,'to' => &$TGame['TAces'][$card->suit]
 				);
 			}
 		}
@@ -325,10 +270,10 @@ class Solitary extends CardGame {
 	/**
 	 * Recherche si un déplacement d'une carte ou d'un groupe de carte du plateau est possible
 	 */
-	private function can_move_cards() {
+	private function can_move_cards(&$TGame, &$currentPath) {
 		$TMove = array();
 		// Recherche sur le plateau
-		foreach($this->TBoard as $iCol => $TCard) {
+		foreach($TGame['TBoard'] as $iCol => $TCard) {
 			$iLast = count($TCard) - 1;
 			if(!empty($TCard[$iLast])) {
 				$card = $TCard[$iLast];
@@ -352,13 +297,13 @@ class Solitary extends CardGame {
 					}
 				}
 				
-				$jCol = $this->can_move_card_to_board($card);
-				if($jCol !== false && ($iLast >= 0 || $card->rank != 12) && !$this->card_has_moved($card)) { // Vérification pour ne pas déplacer un roi d'une colonne vide à une autre
+				$jCol = $this->can_move_card_to_board($TGame, $card);
+				if($jCol !== false && ($iLast >= 0 || $card->rank != 12) && !$this->card_has_moved($card, $currentPath)) { // Vérification pour ne pas déplacer un roi d'une colonne vide à une autre
 				//if($jCol !== false && $card != $this->currentPath[count($this->currentPath) - 1]['card']) { // Amélioration : on ne déplace jamais 2 fois de suite la même carte
 					$TMove[] = array(
 						'action' => 'mv'
-						,'from' => &$this->TBoard[$iCol]
-						,'to' => &$this->TBoard[$jCol]
+						,'from' => &$TGame['TBoard'][$iCol]
+						,'to' => &$TGame['TBoard'][$jCol]
 						,'nb' => $nbCards
 					);
 				}
@@ -369,51 +314,18 @@ class Solitary extends CardGame {
 	}
 
 	/**
-	 * Recherche si une carte peut être montée après un mouvement spécial
-	 */
-	private function can_put_a_card_up_after_move() {
-		foreach($this->TAces as $suit => $TCard) {
-			$iLast = count($TCard) - 1;
-			if(!empty($TCard[$iLast])) {
-				$rank = $TCard[$iLast]->rank + 1;
-				$pos = $this->find_card_on_board($suit, $rank); // On cherche si la carte est sur le plateau
-				if($pos !== false) {
-					if($this->can_move_cards_below($pos)) {
-						list($i, $j) = explode(':', $pos);
-						if(!empty($this->TBoard[$i][($j + 1)])) {
-							$card = &$this->TBoard[$i][($j + 1)];
-							$jCol = $this->can_move_card_to_board($card);
-							if($jCol !== false) {
-								$nbCard = count($this->TBoard[$i]) - 1 - $j;
-								return array(
-									'action' => 'mt'
-									,'from' => &$this->TBoard[$i]
-									,'to' => &$this->TBoard[$jCol]
-									,'nb' => $nbCard
-								);
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
 	 * Recherche si la carte de la défausse peut être déscendue
 	 */
-	private function can_put_deck_card_down() {
-		$iLast = count($this->TDiscard) - 1;
-		if(!empty($this->TDiscard[$iLast])) {
-			$card = &$this->TDiscard[$iLast];
-			$iCol = $this->can_move_card_to_board($card);
+	private function can_put_deck_card_down(&$TGame) {
+		$iLast = count($TGame['TDiscard']) - 1;
+		if(!empty($TGame['TDiscard'][$iLast])) {
+			$card = &$TGame['TDiscard'][$iLast];
+			$iCol = $this->can_move_card_to_board($TGame, $card);
 			if($iCol !== false) {
 				return array(
 					'action' => 'dn'
-					,'from' => &$this->TDiscard
-					,'to' => &$this->TBoard[$iCol]
+					,'from' => &$TGame['TDiscard']
+					,'to' => &$TGame['TBoard'][$iCol]
 				);
 			}
 		}
@@ -424,47 +336,42 @@ class Solitary extends CardGame {
 	/**
 	 * Recherche si une carte de la pioche peut être retournée
 	 */
-	private function can_turn_from_deck() {
-		if(empty($this->TDeck) && empty($this->TDiscard)) return false; // Pioche et défausse vide => Plus de tour suivant possible
-		else if(empty($this->TDeck)) { // Pioche vide => Réinitialisation
+	private function can_turn_from_deck(&$TGame) {
+		if(empty($TGame['TDeck']) && empty($TGame['TDiscard'])) return false; // Pioche et défausse vide => Plus de tour suivant possible
+		else if(empty($TGame['TDeck'])) { // Pioche vide => Réinitialisation
 			return array(
 				'action' => 'rs'
-				,'from' => &$this->TDiscard
-				,'to' => &$this->TDeck
+				,'from' => &$TGame['TDiscard']
+				,'to' => &$TGame['TDeck']
 			);
 		} else {
 			return array(
 				'action' => 'tn'
-				,'from' => &$this->TDeck
-				,'to' => &$this->TDiscard
+				,'from' => &$TGame['TDeck']
+				,'to' => &$TGame['TDiscard']
 			);
 		}
 	}
 	
 	/*
 	 * Vérifie si la carte peut être montée, si son rang est supérieur au rang de la dernière carte montée
-	 * et si le niveau autorisé de carte à monter correspond (pour éviter de monter trop vite les cartes)
+	 * et si le niveau autorisé de carte à monter correspond (pour éviter de monter trop vite les cartes) (option)
 	 */
-	private function can_move_card_to_aces(&$card) {
-		$iLast = count($this->TAces[$card->suit]) - 1;
-		$lastRank = (!empty($this->TAces[$card->suit])) ? $this->TAces[$card->suit][$iLast]->rank : -1;
+	private function can_move_card_to_aces(&$TGame, $card) {
+		$iLast = count($TGame['TAces'][$card->suit]) - 1;
+		$lastRank = (!empty($TGame['TAces'][$card->suit])) ? $TGame['TAces'][$card->suit][$iLast]->rank : -1;
 		
 		return ($lastRank + 1 == $card->rank);
 		return ($lastRank + 1 == $card->rank && $card->rank <= $this->acesLevel);
 	}
 	
-	private function can_move_card_to_board(&$card) {
-		foreach($this->TBoard as $iCol => $TCard) {
+	private function can_move_card_to_board(&$TGame, $card) {
+		foreach($TGame['TBoard'] as $iCol => $TCard) {
 			if(empty($TCard) && $card->rank == 12) { // Colonne vide, déplacement possible si la carte est un roi
 				return $iCol;
-			} else {
+			} else if(!empty($TCard)) {
 				$iLast = count($TCard) - 1;
-				$lastRank = (!empty($TCard[$iLast])) ? $TCard[$iLast]->rank : -1;
-				$lastColor = (!empty($TCard[$iLast])) ? $TCard[$iLast]->color : '';
-				
-				if($lastRank - 1 == $card->rank && $lastColor != $card->color) {
-					return $iCol;
-				}
+				if($this->can_be_linked($TCard[$iLast], $card)) return $iCol;
 			}
 		}
 		
@@ -474,9 +381,9 @@ class Solitary extends CardGame {
 	/**
 	 * Calcul le niveau autorisé pour monter une carte
 	 */
-	private function check_aces_level() {
+	private function check_aces_level(&$TGame) {
 		$lowerRank = 100;
-		foreach($this->TAces as $suit => $TCard) {
+		foreach($TGame['TAces'] as $suit => $TCard) {
 			$iLast = count($TCard) - 1;
 			if(!empty($TCard[$iLast])) {
 				$lowerRank = ($TCard[$iLast]->rank < $lowerRank) ? $TCard[$iLast]->rank : $lowerRank;
@@ -487,8 +394,8 @@ class Solitary extends CardGame {
 		$this->acesLevel = $lowerRank + 1;
 	}
 	
-	private function find_card_on_board($suit, $rank) {
-		foreach($this->TBoard as $iCol => $TCard) {
+	/*private function find_card_on_board($suit, $rank) {
+		foreach($TGame['TBoard'] as $iCol => $TCard) {
 			foreach($TCard as $jCol => $card) {
 				if($card->suit == $suit && $card->rank == $rank) {
 					return $iCol.':'.$jCol;
@@ -502,12 +409,12 @@ class Solitary extends CardGame {
 	private function can_move_cards_below($pos) {
 		list($i, $j) = explode(':', $pos);
 		$ok = true;
-		$card = $this->TBoard[$i][$j];
+		$card = $TGame['TBoard'][$i][$j];
 		
-		while($j < count($this->TBoard[$i]) - 1) { // On vérifie que les cartes d'en dessous sont à la suite
+		while($j < count($TGame['TBoard'][$i]) - 1) { // On vérifie que les cartes d'en dessous sont à la suite
 			$j++;
-			if(!empty($this->TBoard[$i][$j])) {
-				$nextCard = $this->TBoard[$i][$j];
+			if(!empty($TGame['TBoard'][$i][$j])) {
+				$nextCard = $TGame['TBoard'][$i][$j];
 				if(!$this->can_be_linked($card, $nextCard)) {
 					$ok = false;
 					break;
@@ -517,7 +424,7 @@ class Solitary extends CardGame {
 		}
 		
 		return $ok;
-	}
+	}*/
 	
 	private function can_be_linked(&$parentCard, &$childCard) {
 		return ($parentCard->rank -1 == $childCard->rank && $parentCard->color != $childCard->color && $parentCard->display);
@@ -526,9 +433,9 @@ class Solitary extends CardGame {
 	/**
 	 * Vérifie si une carte a déjà été déplacée
 	 */
-	private function card_has_moved(&$card) {
-		foreach($this->currentPath as $move) {
-			if(($move['action'] == 'mv' || $move['action'] == 'dn') && $move['card']->code == $card->code) {
+	private function card_has_moved(&$card, &$currentPath) {
+		foreach($currentPath as $move) {
+			if($move['card']->code == $card->code && ($move['action'] == 'mv' || $move['action'] == 'dn')) {
 				return true;
 			}
 		}
@@ -539,11 +446,11 @@ class Solitary extends CardGame {
 	/**
 	 * Vérifie si on est dans une boucle infinie
 	 */
-	private function infinite_move(&$move) {
+	private function infinite_move(&$move, $currentPath, &$TGame) {
 		if($move['action'] == 'rs') {
-			$nbCards = count($this->TDiscard);
+			$nbCards = count($TGame['TDiscard']);
 			for ($i=0; $i < $nbCards; $i++) { 
-				$TMove = array_slice($this->currentPath, -1, 1);
+				$TMove = array_slice($currentPath, -1, 1);
 				if($TMove[0]['action'] != 'tn') {
 					return false;
 				}
@@ -557,17 +464,17 @@ class Solitary extends CardGame {
 	
 	public function is_game_finished() {
 		$finished = true;
-		foreach($this->TAces as $suit => $TCard) {
+		foreach($TGame['TAces'] as $suit => $TCard) {
 			if(count($TCard) < 13) $finished = false;
 		}
 		return $finished;
 	}
 	
-	private function save_current_solution() {
-		$this->TPath[] = array('score' => $this->currentScore, 'path' => $this->currentPath);
-		if($this->currentScore >= $this->bestScore) {
-			$this->bestScore = $this->currentScore;
-			$this->bestPath = $this->currentPath;
+	private function save_current_solution($currentPath, $currentScore) {
+		$this->TPath[] = array('score' => $currentScore, 'path' => $currentPath);
+		if($currentScore >= $this->bestScore) {
+			$this->bestScore = $currentScore;
+			$this->bestPath = $currentPath;
 		}
 	}
 }

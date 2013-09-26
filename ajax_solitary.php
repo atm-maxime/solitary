@@ -23,9 +23,12 @@ function search_solution() {
 	$solitary->create_perso_game($_REQUEST['TDeck'], $_REQUEST['TBoard']);
 	
 	// Sauvegarde pour tests
-	file_put_contents('save/'.date('Y-m-d H:i:s').'.sol', serialize($solitary->TInit));
+	//file_put_contents('save/'.date('Y-m-d H:i:s').'.sol', serialize($solitary->TInit));
 	
-	$solitary->get_solution();
+	$solitary->get_solution(array(), 0, $solitary->TInit);
+	
+	//$solitary->save_init_position();
+	//file_put_contents('save/'.date('Y-m-d H:i:s').'.sol', serialize($solitary->TInit));
 	
 	$sol = new TTemplateTBS();
 	$pathHTML = $sol->render(
