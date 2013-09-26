@@ -35,7 +35,6 @@ function search_solution() {
 		)
 		, array(
 			'data' => array(
-				'score' => $solitary->bestScore
 			)
 			,'view' => array(
 				'http' => HTTP

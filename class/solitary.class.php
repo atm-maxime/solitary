@@ -217,21 +217,14 @@ class Solitary extends CardGame {
 		switch ($move['action']) {
 			case 'up':
 				$cardScore = ($move['card']->rank < 10) ? ($move['card']->rank + 1) : 10;
-				$cardScore *= 10; 
+				$cardScore *= 10;
 				$score = 110 - $cardScore;
-				
-				if(!empty($move['from'])) {
-					$score += 20;
-				}
 				
 				break;
 			case 'dn': $score = 20;
 				break;
 			case 'mv':
 			case 'mt':
-				if(!empty($move['from'])) {
-					$score = 20;
-				}
 				break;
 			
 			case 'tn':
@@ -251,10 +244,17 @@ class Solitary extends CardGame {
 	private function set_card_visibility(&$move, $mode) {
 		// La carte suivante de l'emplacement d'origine est maintenant visible
 		$iLastFrom = count($move['from']) - 1;
-		if($iLastFrom >= 0) $move['from'][$iLastFrom]->display = true;
+		if($iLastFrom >= 0) {
+			$move['from'][$iLastFrom]->display = true;
+			$this->currentScore += 20;
+		}
+		
 		// La carte parente de l'emplacement de destination n'est plus visible si mouvement inversé
 		$iLastTo = count($move['to']) - 2;
-		if($iLastTo >= 0 && $mode == 'reverse') $move['to'][$iLastTo]->display = false;
+		if($iLastTo >= 0 && $mode == 'reverse') {
+			$move['to'][$iLastTo]->display = false;
+			$this->currentScore -= 20;
+		}
 	}
 	
 	private function get_next_move() {
